@@ -36,24 +36,35 @@ BGCOLOR  = (220, 220, 220)
 def main():
     global FPSCLOCK, DISPLAYSURF, fontObj
     pygame.init()
-    soundObj = pygame.mixer.Sound('pickup.wav')
-    music = pygame.mixer.Sound('battery8bit.wav')
+    youLose = pygame.image.load('you-lose.png')
+    #soundObj = pygame.mixer.Sound('pickup.wav')
+    #music = pygame.mixer.Sound('battery8bit.wav')
     fontObj = pygame.font.Font('freesansbold.ttf', 16)
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Vaughn\'s 2048')
-    music.play()
+    #music.play()
 
     while True:
         DISPLAYSURF.fill(WHITE)
         drawBoard()
         drawTiles()
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+        if checkLose():
+            pygame.display.set_caption("You Lose")
+            DISPLAYSURF.fill(WHITE)
+            DISPLAYSURF.blit(youLose, (200, 100))
+            pygame.display.update()
+            time.sleep(5)
+            pygame.quit()
+            sys.exit()
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYUP:
-                soundObj.stop()
+                #soundObj.stop()
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
@@ -61,36 +72,32 @@ def main():
                 # check key presses
                 elif event.key == K_w or event.key == K_UP:
                     if checkUp():
-                        soundObj.play()
+                        #soundObj.play()
                         if not addRandomTiles():
-                            music.stop()
+                            #music.stop()
                             pygame.quit()
                             sys.exit()
                 elif event.key == K_s or event.key == K_DOWN:
                     if checkDown():
-                        soundObj.play()
+                        #soundObj.play()
                         if not addRandomTiles():
-                            music.stop()
+                            #music.stop()
                             pygame.quit()
                             sys.exit()
                 elif event.key == K_d or event.key == K_RIGHT:
                     if checkRight():
-                        soundObj.play()
+                        #soundObj.play()
                         if not addRandomTiles():
-                            music.stop()
+                            #music.stop()
                             pygame.quit()
                             sys.exit()
                 elif event.key == K_a or event.key == K_LEFT:
                     if checkLeft():
-                        soundObj.play()
+                        #soundObj.play()
                         if not addRandomTiles():
-                            music.stop()
+                            #music.stop()
                             pygame.quit()
                             sys.exit()
-                            
-                
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
 
 def addRandomTiles():
     numToAdd = random.randint(0,10)
@@ -103,7 +110,7 @@ def addRandomTiles():
     col = 0
     x = 0
     numTries = 0
-    while x < numToAdd or numTries == 64:
+    while x < numToAdd and numTries <= 64:
         row = random.randint(0, 3)
         col = random.randint(0, 3)
         if tiles[col][row] == 0:
@@ -115,7 +122,9 @@ def addRandomTiles():
             tiles[col][row] = valueToAdd
             x += 1
         numTries += 1
-    if numTries == 64:
+    if numTries >= 64:
+        if x > 0:
+            return True
         for i in range(0, 4):
             for j in range(0, 4):
                 if tiles[j][i] == 0:
@@ -147,7 +156,7 @@ def drawTiles():
     for i in range(0, 4):
         for j in range (0, 4):
             if tiles[j][i] != 0:
-                text = getText(tiles[j][i])
+                text = str(tiles[j][i])
                 tempColor = getColor(tiles[j][i])
                 textSurfaceObj = fontObj.render(text, True, BLACK, tempColor)
                 textRectObj = textSurfaceObj.get_rect()
@@ -303,6 +312,29 @@ def checkLeft():
                 tiles[j][3] = 0
                 didMove = True
     return didMove
+    
+def checkLose():
+    # check if the game board is full
+    for i in range(0, 4):
+        for j in range(0, 4):
+            if tiles[j][i] == 0:
+                return False
+    # check if any of the tiles could collide
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if tiles[j][i] == tiles[j + 1][i]:
+                return False
+            if tiles[j][i] == tiles[j][i + 1]:
+                return False
+    
+    # check last row and last column
+    for i in range(0, 3):
+        if tiles[i][2] == tiles[i][3]:
+            return False
+    for i in range(0, 3):
+        if tiles[2][i] == tiles[3][i]:
+            return False
+    return True
 
 def getColor(number):
     retval = LIGHTGRAY
@@ -328,32 +360,6 @@ def getColor(number):
         retval = YELLOW
     elif number == 4096:
         retval = BLACK
-    return retval
-
-def getText(number):
-    retval = '2'
-    if number == 4:
-        retval = '4'
-    elif number == 8:
-        retval = '8'
-    elif number == 16:
-        retval = '16'
-    elif number == 32:
-        retval = '32'
-    elif number == 64:
-        retval = '64'
-    elif number == 128:
-        retval = '128'
-    elif number == 256:
-        retval = '256'
-    elif number == 512:
-        retval = '512'
-    elif number == 1024:
-        retval = '1024'
-    elif number == 2048:
-        retval = '2048'
-    elif number == 4096:
-        retval = '4096'
     return retval
     
 if __name__ == '__main__':
